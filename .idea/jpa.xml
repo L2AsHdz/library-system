@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JpaBuddyIdeaProjectConfig">
+    <option name="defaultUnitInitialized" value="true" />
+    <option name="reLastEntityCreationPackage" value="src/main/java/com/ayd2/librarysystem" />
+    <option name="renamerInitialized" value="true" />
+    <option name="reverseEngineeringLastDbConnectionId" value="a28532a5-63d6-4e7d-a468-9ca6570ed16d" />
+  </component>
+  <component name="PersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="LibrarySystem" name="Default">
+        <packages>
+          <package value="com.ayd2.librarysystem" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
+</project>
