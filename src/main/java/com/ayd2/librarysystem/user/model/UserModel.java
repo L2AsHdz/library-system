@@ -1,15 +1,18 @@
-package com.ayd2.librarysystem.model;
+package com.ayd2.librarysystem.user.model;
 
+import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
+import com.ayd2.librarysystem.user.model.enums.Rol;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter @Setter @ToString @Builder
 @Entity
-public class User {
+@Table(name = "User")
+public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
@@ -30,8 +33,15 @@ public class User {
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    @Lob
+    @Enumerated(EnumType.STRING)
     @Column(name = "user_role")
-    private String userRole;
+    private Rol userRole;
+
+    @Column(name = "status")
+    private Short status;
+
+    public UserResponseDto toRecord(){
+        return new UserResponseDto(id, fullName, username, email, password, birthDate, userRole.name(), status == 1);
+    }
 
 }
