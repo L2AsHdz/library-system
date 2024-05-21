@@ -1,4 +1,4 @@
-package com.ayd2.librarysystem.model;
+package com.ayd2.librarysystem.book.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,9 +18,8 @@ public class Book {
     @Column(name = "title", length = 150)
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id")
-    private Author author;
+    @Column(name = "author", length = 150)
+    private String author;
 
     @Column(name = "stock")
     private Long stock;

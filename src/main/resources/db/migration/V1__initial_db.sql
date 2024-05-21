@@ -23,19 +23,13 @@ CREATE TABLE Student (
     FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
-CREATE TABLE Author (
-    author_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    full_name VARCHAR(150) NOT NULL
-);
-
 CREATE TABLE Book (
     book_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(150) NOT NULL,
-    author_id BIGINT NOT NULL,
+    author VARCHAR(150) NOT NULL,
     stock BIGINT DEFAULT 0,
     publication_date DATE NOT NULL,
-    publisher VARCHAR(150) NOT NULL,
-    FOREIGN KEY (author_id) REFERENCES Author(author_id)
+    publisher VARCHAR(150) NOT NULL
 );
 
 CREATE TABLE Loan (

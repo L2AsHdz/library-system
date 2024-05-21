@@ -1,4 +1,4 @@
-package com.ayd2.librarysystem.model;
+package com.ayd2.librarysystem.parameter.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

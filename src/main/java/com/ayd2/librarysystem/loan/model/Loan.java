@@ -1,5 +1,7 @@
-package com.ayd2.librarysystem.model;
+package com.ayd2.librarysystem.loan.model;
 
+import com.ayd2.librarysystem.book.model.Book;
+import com.ayd2.librarysystem.student.model.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
