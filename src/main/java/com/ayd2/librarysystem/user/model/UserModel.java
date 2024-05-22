@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @Getter @Setter @ToString @Builder
 @Entity
 @Table(name = "User")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +39,7 @@ public class UserModel {
     private Rol userRole;
 
     @Column(name = "status")
-    private Short status;
+    private Short status = 1;
 
     public UserResponseDto toRecord(){
         return new UserResponseDto(id, fullName, username, email, password, birthDate, userRole.name(), status == 1);

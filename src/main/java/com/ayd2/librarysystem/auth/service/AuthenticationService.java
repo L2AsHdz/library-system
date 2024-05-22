@@ -3,8 +3,10 @@ package com.ayd2.librarysystem.auth.service;
 import com.ayd2.librarysystem.auth.model.dto.CredentialsDto;
 import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.ServiceException;
+import com.ayd2.librarysystem.user.model.dto.StudentRequestDto;
 import com.ayd2.librarysystem.user.model.dto.UserRequestDto;
 import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
+import com.ayd2.librarysystem.user.repository.StudentRepository;
 import com.ayd2.librarysystem.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
@@ -20,6 +23,7 @@ import java.io.IOException;
 public class AuthenticationService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
@@ -33,6 +37,17 @@ public class AuthenticationService {
         if (duplicatedUserByEmail.isPresent())
             throw new DuplicatedEntityException("User with email already exists");
 
+        if (userRequestDto instanceof StudentRequestDto studentRequestDto) {
+            var duplicatedStudentByAcademicNumber = studentRepository.findByAcademicNumber(studentRequestDto.academicNumber());
+            if (duplicatedStudentByAcademicNumber.isPresent())
+                throw new DuplicatedEntityException("Student with academic number already exists");
+
+            var newStudent = studentRequestDto.toEntity();
+            newStudent.setPassword(encoder.encode(newStudent.getPassword()));
+            studentRepository.save(newStudent);
+            return newStudent.toRecord();
+        }
+
         var newUser = userRequestDto.toEntity();
         newUser.setPassword(encoder.encode(newUser.getPassword()));
 
@@ -42,7 +57,7 @@ public class AuthenticationService {
 
     public String signIn(CredentialsDto credentialsDto) throws IOException, ServiceException {
         var user = userRepository.findByUsername(credentialsDto.username())
-                .orElseGet(() -> userRepository.findByEmail(credentialsDto.email())
+                .orElseGet(() -> userRepository.findByEmail(credentialsDto.username())
                         .orElseThrow(() -> new UsernameNotFoundException("User not found")));
 
 

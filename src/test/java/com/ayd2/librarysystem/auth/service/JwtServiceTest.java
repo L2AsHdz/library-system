@@ -1,5 +1,7 @@
 package com.ayd2.librarysystem.auth.service;
 
+import com.ayd2.librarysystem.career.model.CareerModel;
+import com.ayd2.librarysystem.user.model.StudentModel;
 import com.ayd2.librarysystem.user.model.UserModel;
 import io.jsonwebtoken.Claims;
 import com.ayd2.librarysystem.user.model.enums.Rol;
@@ -27,9 +29,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
 
-    @Mock
-    private UserModel userModel;
-
     @InjectMocks
     private JwtService jwtService;
 
@@ -53,17 +52,36 @@ class JwtServiceTest {
                 .status((short)1)
                 .build();
 
-        when(userModel.getId()).thenReturn(user.getId());
-        when(userModel.getUsername()).thenReturn(user.getUsername());
-        when(userModel.getUserRole()).thenReturn(user.getUserRole());
     }
 
     @Test
     public void testGenerateToken() throws Exception {
-        String token = jwtService.generateToken(userModel);
+        String token = jwtService.generateToken(user);
 
         assertThat(token).isNotNull();
         assertThat(jwtService.extractUserName(token)).isEqualTo(user.getUsername());
+    }
+
+    @Test
+    public void testBuildClaimsStudent() throws Exception {
+        StudentModel student = new StudentModel();
+        student.setId(1L);
+        student.setUsername("username");
+        student.setFullName("fullName");
+        student.setEmail("email");
+        student.setPassword("password");
+        student.setStatus((short)1);
+        student.setUserRole(Rol.STUDENT);
+        student.setAcademicNumber(23413414L);
+        student.setCareerModel(CareerModel.builder().id(1L).name("career").build());
+        student.setIsSanctioned(false);
+
+        Map<String, Object> claims = jwtService.buildClaims(student);
+
+        assertThat(claims).isNotNull();
+        assertThat(claims.get("id")).isEqualTo(student.getId());
+        assertThat(claims.get("user")).isEqualTo(student.getUsername());
+        assertThat(claims.get("rol")).isEqualTo(Rol.STUDENT);
     }
 
     @Test
@@ -71,21 +89,21 @@ class JwtServiceTest {
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetails.getUsername()).thenReturn(user.getUsername());
 
-        String token = jwtService.generateToken(userModel);
+        String token = jwtService.generateToken(user);
 
         assertThat(jwtService.isTokenValid(token, userDetails)).isTrue();
     }
 
     @Test
     public void testExtractUserName() throws Exception {
-        String token = jwtService.generateToken(userModel);
+        String token = jwtService.generateToken(user);
 
         assertThat(jwtService.extractUserName(token)).isEqualTo(user.getUsername());
     }
 
     @Test
     public void testExtractClaim() throws Exception {
-        String token = jwtService.generateToken(userModel);
+        String token = jwtService.generateToken(user);
 
         Date expiration = jwtService.extractClaim(token, Claims::getExpiration);
         assertThat(expiration).isAfter(new Date());

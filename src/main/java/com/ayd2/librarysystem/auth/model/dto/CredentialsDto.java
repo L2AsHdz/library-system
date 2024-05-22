@@ -11,8 +11,6 @@ import java.io.Serializable;
 public record CredentialsDto(
 
         String username,
-        @Email(message = "Email should be valid")
-        String email,
         @NotBlank(message = "Password is required")
         String password
 ) implements Serializable {

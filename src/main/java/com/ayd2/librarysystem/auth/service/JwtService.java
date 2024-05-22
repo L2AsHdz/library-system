@@ -1,5 +1,6 @@
 package com.ayd2.librarysystem.auth.service;
 
+import com.ayd2.librarysystem.user.model.StudentModel;
 import com.ayd2.librarysystem.user.model.UserModel;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -36,11 +37,19 @@ public class JwtService {
         return createToken(claims, user.getUsername());
     }
 
-    private Map<String, Object> buildClaims(UserModel user) {
+    public Map<String, Object> buildClaims(UserModel user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", user.getId());
         claims.put("user", user.getUsername());
+        claims.put("email", user.getEmail());
+        claims.put("fullName", user.getFullName());
         claims.put("rol", user.getUserRole());
+
+        if (user instanceof StudentModel student) {
+            claims.put("academicNumber", student.getAcademicNumber());
+            claims.put("career", student.getCareerModel().getName());
+            claims.put("isSanctioned", student.getIsSanctioned());
+        }
         return claims;
     }
 
