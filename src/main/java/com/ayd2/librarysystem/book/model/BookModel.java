@@ -1,15 +1,20 @@
 package com.ayd2.librarysystem.book.model;
 
+import com.ayd2.librarysystem.book.model.dto.BookResponseDto;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
+@ToString
 @Entity
-public class Book {
+@Table(name = "Book")
+public class BookModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "book_id", nullable = false)
@@ -29,5 +34,9 @@ public class Book {
 
     @Column(name = "publisher", length = 150)
     private String publisher;
+
+    public BookResponseDto toRecord() {
+        return new BookResponseDto(this.id, this.title, this.author, this.stock, this.publicationDate, this.publisher);
+    }
 
 }

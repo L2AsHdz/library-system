@@ -1,13 +1,17 @@
 package com.ayd2.librarysystem.parameter.model;
 
+import com.ayd2.librarysystem.parameter.model.dto.ParameterResponseDto;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Entity
-public class Parameter {
+@Table(name = "Parameter")
+public class ParameterModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "parameter_id", nullable = false)
@@ -18,5 +22,9 @@ public class Parameter {
 
     @Column(name = "parameter_value")
     private Double parameterValue;
+
+    public ParameterResponseDto toRecord() {
+        return new ParameterResponseDto(id, parameterName, parameterValue);
+    }
 
 }

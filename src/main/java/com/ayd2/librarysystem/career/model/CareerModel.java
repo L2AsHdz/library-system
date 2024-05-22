@@ -1,13 +1,17 @@
 package com.ayd2.librarysystem.career.model;
 
+import com.ayd2.librarysystem.career.model.dto.CareerResponseDto;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Entity
-public class Career {
+@Table(name = "Career")
+public class CareerModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "career_id", nullable = false)
@@ -15,5 +19,9 @@ public class Career {
 
     @Column(name = "name", length = 150)
     private String name;
+
+    public CareerResponseDto toRecord() {
+        return new CareerResponseDto(id, name);
+    }
 
 }

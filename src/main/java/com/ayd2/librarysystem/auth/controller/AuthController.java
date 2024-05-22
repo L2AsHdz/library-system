@@ -25,7 +25,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/signin")
-    public ResponseEntity<Void> getToken(@RequestBody CredentialsDto credentials) throws ServiceException, IOException {
+    public ResponseEntity<Void> getToken(@RequestBody @Valid CredentialsDto credentials) throws ServiceException, IOException {
         var token = authenticationService.signIn(credentials);
         var headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + token);
@@ -33,7 +33,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserResponseDto> signUp(@RequestBody UserRequestDto userRequestDto) throws ServiceException {
+    public ResponseEntity<UserResponseDto> signUp(@RequestBody @Valid UserRequestDto userRequestDto) throws ServiceException {
         var userCreated = authenticationService.signUp(userRequestDto);
         return ResponseEntity.ok().body(userCreated);
     }

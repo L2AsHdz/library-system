@@ -1,6 +1,6 @@
 package com.ayd2.librarysystem.student.model;
 
-import com.ayd2.librarysystem.career.model.Career;
+import com.ayd2.librarysystem.career.model.CareerModel;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +16,7 @@ public class Student {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "career_id")
-    private Career career;
+    private CareerModel careerModel;
 
     @Column(name = "academic_number")
     private Long academicNumber;

@@ -1,6 +1,6 @@
 package com.ayd2.librarysystem.loan.model;
 
-import com.ayd2.librarysystem.book.model.Book;
+import com.ayd2.librarysystem.book.model.BookModel;
 import com.ayd2.librarysystem.student.model.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,7 +23,7 @@ public class Loan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
-    private Book book;
+    private BookModel bookModel;
 
     @Column(name = "loan_price")
     private Double loanPrice;
