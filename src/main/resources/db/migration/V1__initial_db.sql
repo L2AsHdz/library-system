@@ -40,7 +40,7 @@ CREATE TABLE Loan (
     loan_arrears DOUBLE,
     loan_date DATE NOT NULL,
     return_date DATE,
-    status ENUM('RESERVATION', 'ACTIVE', 'RETURNED', 'ARREAR', 'EXPIRED') NOT NULL,
+    status ENUM('RESERVATION', 'ACTIVE', 'RETURNED', 'ARREARS', 'EXPIRED') NOT NULL,
     FOREIGN KEY (student_id) REFERENCES Student(user_id),
     FOREIGN KEY (book_id) REFERENCES Book(book_id)
 );
