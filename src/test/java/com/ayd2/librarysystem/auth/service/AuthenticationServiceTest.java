@@ -239,7 +239,7 @@ class AuthenticationServiceTest {
 
         assertThatThrownBy(() -> authenticationService.signIn(credentialsDto))
                 .isInstanceOf(ServiceException.class)
-                .hasMessage("User not found");
+                .hasMessage("User is disabled");
 
         verify(userRepository).findByUsername(any(String.class));
         verify(authenticationManager, never()).authenticate(any(UsernamePasswordAuthenticationToken.class));
