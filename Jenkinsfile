@@ -36,6 +36,7 @@ pipeline {
                                 transfers: [
                                     sshTransfer(
                                         sourceFiles: 'target/**/*',
+                                        removePrefix: 'target',
                                         remoteDirectory: '',
                                         execCommand: '''
                                             sudo pkill -f "java -jar /home/ubuntu/backend/LibrarySystem-0.0.1-SNAPSHOT.jar"
