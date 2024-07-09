@@ -1,7 +1,6 @@
 package com.ayd2.librarysystem.auth.service;
 
 import com.ayd2.librarysystem.auth.model.UserModelDetails;
-import com.ayd2.librarysystem.user.model.enums.Rol;
 import com.ayd2.librarysystem.user.repository.StudentRepository;
 import com.ayd2.librarysystem.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

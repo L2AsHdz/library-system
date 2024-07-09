@@ -62,7 +62,7 @@ public class AuthenticationService {
 
 
         if (!(user.getStatus() == 1))
-            throw new ServiceException("User not found");
+            throw new ServiceException("User is disabled");
 
         var authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), credentialsDto.password())

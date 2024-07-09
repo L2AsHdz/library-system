@@ -1,7 +1,6 @@
 package com.ayd2.librarysystem.security;
 
 import com.ayd2.librarysystem.auth.service.CustomUserDetailsService;
-import com.ayd2.librarysystem.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

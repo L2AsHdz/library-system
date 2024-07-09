@@ -39,8 +39,9 @@ pipeline {
                                         removePrefix: 'target',
                                         remoteDirectory: '',
                                         execCommand: '''
-                                            sudo pkill -f "java -jar /home/ubuntu/backend/LibrarySystem-0.0.1-SNAPSHOT.jar"
-                                            sudo java -jar /home/ubuntu/backend/LibrarySystem-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > /dev/null 2>&1 &
+                                            cd backend
+                                            sh stop.sh
+                                            sh start_silent.sh
                                         '''
                                     )
                                 ],
