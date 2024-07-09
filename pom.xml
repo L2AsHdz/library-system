@@ -135,7 +135,7 @@
 				<version>3.2.5</version>
 				<configuration>
 					<excludes>
-						<exclude>com.library.LibraryApplicationTests</exclude>
+						<exclude>com.ayd2.librarysystem.LibrarySystemApplicationTests</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
