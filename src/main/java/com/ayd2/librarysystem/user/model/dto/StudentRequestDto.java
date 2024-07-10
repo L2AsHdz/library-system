@@ -48,7 +48,7 @@ public class StudentRequestDto extends UserRequestDto {
         student.setEmail(email());
         student.setPassword(password());
         student.setBirthDate(birthDate());
-        student.setUserRole(Rol.valueOf(role().toUpperCase()));
+        student.setUserRole(Rol.STUDENT);
 
         return student;
     }

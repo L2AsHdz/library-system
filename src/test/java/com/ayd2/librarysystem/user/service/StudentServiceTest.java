@@ -120,9 +120,9 @@ class StudentServiceTest {
     @Test
     public void itShouldUpdateStudent() throws NotFoundException, DuplicatedEntityException {
         when(studentRepository.findById(anyLong())).thenReturn(java.util.Optional.of(testStudent));
-        when(userRepository.findByEmail(anyString())).thenReturn(java.util.Optional.empty());
-        when(userRepository.findByUsername(anyString())).thenReturn(java.util.Optional.empty());
-        when(studentRepository.findByAcademicNumber(anyLong())).thenReturn(java.util.Optional.empty());
+        when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.empty());
+        when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.empty());
+        when(studentRepository.findByAcademicNumberAndIdIsNot(anyLong(), anyLong())).thenReturn(java.util.Optional.empty());
         when(careerRepository.findById(anyLong())).thenReturn(Optional.of(testStudent.getCareerModel()));
         when(studentRepository.save(testStudent)).thenReturn(testStudent);
 
@@ -131,9 +131,9 @@ class StudentServiceTest {
         assertThat(updatedStudentResponseDto).isNotNull().isEqualToComparingFieldByField(testStudentResponseDto);
 
         verify(studentRepository).findById(anyLong());
-        verify(userRepository).findByEmail(anyString());
-        verify(userRepository).findByUsername(anyString());
-        verify(studentRepository).findByAcademicNumber(anyLong());
+        verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
+        verify(userRepository).findByUsernameAndIdNot(anyString(), anyLong());
+        verify(studentRepository).findByAcademicNumberAndIdIsNot(anyLong(), anyLong());
         verify(studentRepository).save(testStudent);
     }
 
@@ -151,30 +151,30 @@ class StudentServiceTest {
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenEmailAlreadyExists() {
         when(studentRepository.findById(anyLong())).thenReturn(java.util.Optional.of(testStudent));
-        when(userRepository.findByEmail(anyString())).thenReturn(java.util.Optional.of(testStudent));
+        when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.of(testStudent));
 
         assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("Student with this email already exists");
 
         verify(studentRepository).findById(anyLong());
-        verify(userRepository).findByEmail(anyString());
+        verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
         verify(userRepository, never()).save(any(StudentModel.class));
     }
 
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenUsernameAlreadyExists() {
         when(studentRepository.findById(anyLong())).thenReturn(java.util.Optional.of(testStudent));
-        when(userRepository.findByEmail(anyString())).thenReturn(java.util.Optional.empty());
-        when(userRepository.findByUsername(anyString())).thenReturn(java.util.Optional.of(testStudent));
+        when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.empty());
+        when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.of(testStudent));
 
         assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("Student with this username already exists");
 
         verify(studentRepository).findById(anyLong());
-        verify(userRepository).findByEmail(anyString());
-        verify(userRepository).findByUsername(anyString());
+        verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
+        verify(userRepository).findByUsernameAndIdNot(anyString(), anyLong());
         verify(userRepository, never()).save(any(StudentModel.class));
     }
 }

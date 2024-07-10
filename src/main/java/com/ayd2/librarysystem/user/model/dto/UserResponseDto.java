@@ -28,35 +28,35 @@ public class UserResponseDto implements Serializable {
                 this.status = status;
         }
 
-        public Long id() {
+        public Long getId() {
                 return id;
         }
 
-        public String fullName() {
+        public String getFullName() {
                 return fullName;
         }
 
-        public String username() {
+        public String getUsername() {
                 return username;
         }
 
-        public String email() {
+        public String getEmail() {
                 return email;
         }
 
-        public String password() {
+        public String getPassword() {
                 return password;
         }
 
-        public LocalDate birthDate() {
+        public LocalDate getBirthDate() {
                 return birthDate;
         }
 
-        public String userRole() {
+        public String getUserRole() {
                 return userRole;
         }
 
-        public Boolean status() {
+        public Boolean getStatus() {
                 return status;
         }
 }

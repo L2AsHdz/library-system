@@ -1,7 +1,6 @@
 package com.ayd2.librarysystem.user.service;
 
 import com.ayd2.librarysystem.career.repository.CareerRepository;
-import com.ayd2.librarysystem.career.service.CareerService;
 import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.NotFoundException;
 import com.ayd2.librarysystem.user.model.StudentModel;
@@ -38,15 +37,15 @@ public class StudentService {
         var studentToUpdate = studentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
 
-        var duplicatedByEmail = userRepository.findByEmail(studentRequestDto.email());
+        var duplicatedByEmail = userRepository.findByEmailAndIdNot(studentRequestDto.email(), id);
         if (duplicatedByEmail.isPresent())
             throw new DuplicatedEntityException("Student with this email already exists");
 
-        var duplicatedByUsername = userRepository.findByUsername(studentRequestDto.username());
+        var duplicatedByUsername = userRepository.findByUsernameAndIdNot(studentRequestDto.username(), id);
         if (duplicatedByUsername.isPresent())
             throw new DuplicatedEntityException("Student with this username already exists");
 
-        var duplicatedByAcademicNumber = studentRepository.findByAcademicNumber(studentRequestDto.academicNumber());
+        var duplicatedByAcademicNumber = studentRepository.findByAcademicNumberAndIdIsNot(studentRequestDto.academicNumber(), id);
         if (duplicatedByAcademicNumber.isPresent())
             throw new DuplicatedEntityException("Student with this academic number already exists");
 

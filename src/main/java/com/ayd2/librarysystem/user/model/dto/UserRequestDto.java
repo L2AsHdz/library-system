@@ -36,15 +36,16 @@ public class UserRequestDto implements Serializable {
 
         @NotBlank(message = "The user role is required")
         @Pattern(regexp = "^(ADMIN|STUDENT|LIBRARIAN)$", message = "The user role must be ADMIN, STUDENT or LIBRARIAN")
-        private final String role;
+        private final String userRole;
 
-        public UserRequestDto(String fullName, String username, String email, String password, LocalDate birthDate, String role) {
+        public UserRequestDto(String fullName, String username, String email, String password, LocalDate birthDate, String userRole) {
                 this.fullName = fullName;
                 this.username = username;
                 this.email = email;
                 this.password = password;
                 this.birthDate = birthDate;
-                this.role = role;
+                this.userRole = userRole;
+
         }
 
         public UserModel toEntity() {
@@ -54,7 +55,8 @@ public class UserRequestDto implements Serializable {
                         .email(email)
                         .password(password)
                         .birthDate(birthDate)
-                        .userRole(Rol.valueOf(role.toUpperCase()))
+                        .userRole(Rol.valueOf(userRole.toUpperCase()))
+                        .status((short) 1)
                         .build();
         }
 
@@ -79,6 +81,6 @@ public class UserRequestDto implements Serializable {
         }
 
         public String role(){
-                return role;
+                return userRole;
         }
 }

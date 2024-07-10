@@ -5,6 +5,7 @@ import com.ayd2.librarysystem.exception.NotFoundException;
 import com.ayd2.librarysystem.user.model.UserModel;
 import com.ayd2.librarysystem.user.model.dto.UserRequestDto;
 import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
+import com.ayd2.librarysystem.user.model.enums.Rol;
 import com.ayd2.librarysystem.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class UserService {
     }
 
     public List<UserResponseDto> getAllUsers() {
-        return userRepository.findAll().stream()
+        return userRepository.findAllByUserRoleIn(List.of(Rol.ADMIN, Rol.LIBRARIAN)).stream()
                 .map(UserModel::toRecord)
                 .toList();
     }
@@ -33,11 +34,11 @@ public class UserService {
         var userToUpdate = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        var duplicatedByEmail = userRepository.findByEmail(userRequestDto.email());
+        var duplicatedByEmail = userRepository.findByEmailAndIdNot(userRequestDto.email(), id);
         if (duplicatedByEmail.isPresent())
             throw new DuplicatedEntityException("User with this email already exists");
 
-        var duplicatedByUsername = userRepository.findByUsername(userRequestDto.username());
+        var duplicatedByUsername = userRepository.findByUsernameAndIdNot(userRequestDto.username(), id);
         if (duplicatedByUsername.isPresent())
             throw new DuplicatedEntityException("User with this username already exists");
 

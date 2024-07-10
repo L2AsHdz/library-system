@@ -117,7 +117,7 @@ class AuthenticationServiceTest {
         UserResponseDto response = authenticationService.signUp(userRequestDto);
 
         assertThat(response).isNotNull().isInstanceOf(UserResponseDto.class);
-        assertThat(response.username()).isEqualTo(userModel.getUsername());
+        assertThat(response.getUsername()).isEqualTo(userModel.getUsername());
         verify(userRepository).findByUsername(any(String.class));
         verify(userRepository).findByEmail(any(String.class));
         verify(encoder).encode(any(String.class));
@@ -135,7 +135,7 @@ class AuthenticationServiceTest {
         UserResponseDto response = authenticationService.signUp(studentRequestDto);
 
         assertThat(response).isNotNull().isInstanceOf(UserResponseDto.class);
-        assertThat(response.username()).isEqualTo(userModel.getUsername());
+        assertThat(response.getUsername()).isEqualTo(userModel.getUsername());
         verify(userRepository).findByUsername(any(String.class));
         verify(userRepository).findByEmail(any(String.class));
         verify(encoder).encode(any(String.class));

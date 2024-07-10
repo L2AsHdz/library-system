@@ -84,7 +84,7 @@ class UserServiceTest {
 
     @Test
     public void itShouldGetAllUsers() {
-        when(userRepository.findAll()).thenReturn(List.of(testUser));
+        when(userRepository.findAllByUserRoleIn(any())).thenReturn(List.of(testUser));
 
         var result = userService.getAllUsers();
 
@@ -92,34 +92,34 @@ class UserServiceTest {
                 .isNotEmpty()
                 .hasSize(1);
 
-        verify(userRepository).findAll();
+        verify(userRepository).findAllByUserRoleIn(any());
     }
 
     @Test
     public void itShouldFindEmptyList_WhenNoUsers() {
-        when(userRepository.findAll()).thenReturn(List.of());
+        when(userRepository.findAllByUserRoleIn(any())).thenReturn(List.of());
 
         var result = userService.getAllUsers();
 
         assertThat(result).isNotNull()
                 .isEmpty();
 
-        verify(userRepository).findAll();
+        verify(userRepository).findAllByUserRoleIn(any());
     }
 
     @Test
     public void itShouldUpdateUser() throws NotFoundException, DuplicatedEntityException {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(Optional.empty());
         when(userRepository.save(any(UserModel.class))).thenReturn(testUser);
 
         var result = userService.updateUser(testUser.getId(), testUserRequestDto);
 
         assertThat(result).isNotNull().isEqualToComparingFieldByField(testUserResponseDto);
 
-        verify(userRepository).findByEmail(anyString());
-        verify(userRepository).findByUsername(anyString());
+        verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
+        verify(userRepository).findByUsernameAndIdNot(anyString(), anyLong());
         verify(userRepository).findById(anyLong());
         verify(userRepository).save(testUser);
     }
@@ -138,30 +138,30 @@ class UserServiceTest {
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenEmailAlreadyExists() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(testUser));
+        when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(Optional.of(testUser));
 
         assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("User with this email already exists");
 
         verify(userRepository).findById(anyLong());
-        verify(userRepository).findByEmail(anyString());
+        verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
         verify(userRepository, never()).save(any(UserModel.class));
     }
 
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenUsernameAlreadyExists() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
+        when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(Optional.of(testUser));
 
         assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("User with this username already exists");
 
         verify(userRepository).findById(anyLong());
-        verify(userRepository).findByEmail(anyString());
-        verify(userRepository).findByUsername(anyString());
+        verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
+        verify(userRepository).findByUsernameAndIdNot(anyString(), anyLong());
         verify(userRepository, never()).save(any(UserModel.class));
     }
 }
