@@ -6,8 +6,8 @@ import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.ServiceException;
 import com.ayd2.librarysystem.user.model.StudentModel;
 import com.ayd2.librarysystem.user.model.UserModel;
-import com.ayd2.librarysystem.user.model.dto.StudentRequestDto;
-import com.ayd2.librarysystem.user.model.dto.UserRequestDto;
+import com.ayd2.librarysystem.user.model.dto.StudentRequestCreateDto;
+import com.ayd2.librarysystem.user.model.dto.UserRequestCreateDto;
 import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
 import com.ayd2.librarysystem.user.model.enums.Rol;
 import com.ayd2.librarysystem.user.repository.StudentRepository;
@@ -57,8 +57,8 @@ class AuthenticationServiceTest {
 
     private UserModel userModel;
     private StudentModel studentModel;
-    private UserRequestDto userRequestDto;
-    private UserRequestDto studentRequestDto;
+    private UserRequestCreateDto userRequestCreateDto;
+    private UserRequestCreateDto studentRequestDto;
     private CredentialsDto credentialsDto;
 
     @BeforeEach
@@ -84,7 +84,7 @@ class AuthenticationServiceTest {
         studentModel.setAcademicNumber(123456L);
         studentModel.setCareerModel(CareerModel.builder().id(1L).name("Career 1").build());
 
-        userRequestDto = new UserRequestDto(
+        userRequestCreateDto = new UserRequestCreateDto(
                 userModel.getFullName(),
                 userModel.getUsername(),
                 userModel.getEmail(),
@@ -93,7 +93,7 @@ class AuthenticationServiceTest {
                 userModel.getUserRole().name()
         );
 
-        studentRequestDto = new StudentRequestDto(
+        studentRequestDto = new StudentRequestCreateDto(
                 userModel.getFullName(),
                 userModel.getUsername(),
                 userModel.getEmail(),
@@ -114,7 +114,7 @@ class AuthenticationServiceTest {
         when(encoder.encode(any(String.class))).thenReturn(userModel.getPassword());
         when(userRepository.save(any(UserModel.class))).thenReturn(userModel);
 
-        UserResponseDto response = authenticationService.signUp(userRequestDto);
+        UserResponseDto response = authenticationService.signUp(userRequestCreateDto);
 
         assertThat(response).isNotNull().isInstanceOf(UserResponseDto.class);
         assertThat(response.getUsername()).isEqualTo(userModel.getUsername());
@@ -143,13 +143,13 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    public void itShouldThrowException_WhenUsernameExists() {
+    public void itShouldThrowDuplicatedEntityException_WhenUsernameExists() {
         when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(userModel));
 
-        assertThatThrownBy(() -> authenticationService.signUp(userRequestDto))
+        assertThatThrownBy(() -> authenticationService.signUp(userRequestCreateDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("User with username already exists");
-        verify(userRepository).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(any(String.class));
         verify(userRepository, never()).save(any(UserModel.class));
     }
 
@@ -158,7 +158,7 @@ class AuthenticationServiceTest {
         when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
         when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(userModel));
 
-        assertThatThrownBy(() -> authenticationService.signUp(userRequestDto))
+        assertThatThrownBy(() -> authenticationService.signUp(userRequestCreateDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("User with email already exists");
         verify(userRepository).findByUsername(any(String.class));
@@ -195,10 +195,10 @@ class AuthenticationServiceTest {
         assertThat(token).isNotNull();
         assertThat(token).isEqualTo(generatedToken);
 
-        verify(userRepository).findByUsername(any(String.class));
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(authentication).isAuthenticated();
-        verify(jwtService).generateToken(userModel);
+        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(authentication, times(1)).isAuthenticated();
+        verify(jwtService, times(1)).generateToken(userModel);
     }
 
     @Test
@@ -225,8 +225,9 @@ class AuthenticationServiceTest {
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage("User not found");
 
-        verify(userRepository).findByUsername(credentialsDto.username());
-        verify(userRepository).findByEmail(credentialsDto.username());
+        verify(userRepository, times(1)).findByUsername(credentialsDto.username());
+        verify(userRepository, times(1)).findByEmail(credentialsDto.username());
+        verify(studentRepository, never()).findByAcademicNumber(any(Long.class));
         verify(authenticationManager, never()).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(authentication, never()).isAuthenticated();
         verify(jwtService, never()).generateToken(any(UserModel.class));
@@ -241,11 +242,17 @@ class AuthenticationServiceTest {
                 .isInstanceOf(ServiceException.class)
                 .hasMessage("User is disabled");
 
-        verify(userRepository).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(studentRepository, never()).findByAcademicNumber(any(Long.class));
         verify(authenticationManager, never()).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(authentication, never()).isAuthenticated();
         verify(jwtService, never()).generateToken(any(UserModel.class));
     }
+
+    /*
+        TODO: Implement the following tests
+        - itShouldThrowException_WhenStudentNotFound
+     */
 
 //    @Test
 //    public void testSignIn_ShouldThrowException_WhenAuthenticationFails() throws AuthenticationException {

@@ -5,8 +5,8 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicatedEntityException.class)
@@ -63,16 +63,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(detail, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ProblemDetail> handleAllExceptions(Exception ex) {
-        ProblemDetail detail = createProblemDetail(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Internal Server Error",
-                ex.getMessage()
-        );
-        return new ResponseEntity<>(detail, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ProblemDetail> handleBadCredentialsException(BadCredentialsException ex) {
         ProblemDetail detail = createProblemDetail(
@@ -81,6 +71,16 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         return new ResponseEntity<>(detail, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ProblemDetail> handleAllExceptions(Exception ex) {
+        ProblemDetail detail = createProblemDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal Server Error",
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(detail, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ProblemDetail createProblemDetail(HttpStatus status, String title, String detail) {

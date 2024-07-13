@@ -19,8 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CustomUserDetailsServiceTest {
@@ -60,14 +59,11 @@ class CustomUserDetailsServiceTest {
 
     @Test
     public void itShouldLoadUserDetailsByUsername() {
-        // Arrange
         user.setUsername("username");
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
 
-        // Act
         var result = customUserDetailsService.loadUserByUsername(user.getUsername());
 
-        // Assert
         assertThat(result).isNotNull()
                 .isInstanceOf(UserModelDetails.class);
 
@@ -76,13 +72,10 @@ class CustomUserDetailsServiceTest {
 
     @Test
     public void itShouldLoadStudentDetailsByUsername() {
-        // Arrange
         when(studentRepository.findByAcademicNumber(anyLong())).thenReturn(Optional.of(student));
 
-        // Act
         var result = customUserDetailsService.loadUserByUsername(student.getAcademicNumber().toString());
 
-        // Assert
         assertThat(result).isNotNull()
                 .isInstanceOf(UserModelDetails.class);
 
@@ -91,14 +84,11 @@ class CustomUserDetailsServiceTest {
 
     @Test
     public void itShouldLoadUserDetailsByEmail() {
-        // Arrange
         user.setEmail("email");
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
 
-        // Act
         var result = customUserDetailsService.loadUserByUsername(user.getEmail());
 
-        // Assert
         assertThat(result).isNotNull()
                 .isInstanceOf(UserModelDetails.class);
 
@@ -106,21 +96,42 @@ class CustomUserDetailsServiceTest {
     }
 
     @Test
-    public void itShouldThrowUsernameNotFoundException() {
-        // Arrange
+    public void itShouldLoadUserDetailByAcademicNumber() {
+        when(studentRepository.findByAcademicNumber(anyLong())).thenReturn(Optional.of(student));
+
+        var result = customUserDetailsService.loadUserByUsername(student.getAcademicNumber().toString());
+
+        assertThat(result).isNotNull()
+                .isInstanceOf(UserModelDetails.class);
+
+        verify(studentRepository).findByAcademicNumber(anyLong());
+    }
+
+    @Test
+    public void itShouldThrowUsernameNotFoundException_WhenUserNotFound() {
         user.setUsername("username");
         when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> customUserDetailsService.loadUserByUsername(user.getUsername()))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage("User not found");
+
+        verify(userRepository, times(1)).findByUsername(anyString());
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verify(studentRepository, never()).findByAcademicNumber(anyLong());
+    }
+
+    @Test
+    public void itShouldThrowUsernameNotFoundException_WhenStudentNotFound() {
         when(studentRepository.findByAcademicNumber(anyLong())).thenReturn(Optional.empty());
 
-        // Act
-        // Assert
         assertThatThrownBy(() -> customUserDetailsService.loadUserByUsername(student.getAcademicNumber().toString()))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage("User not found");
 
-        verify(userRepository).findByUsername(anyString());
-        verify(userRepository).findByEmail(anyString());
-        verify(studentRepository).findByAcademicNumber(anyLong());
+        verify(userRepository, times(1)).findByUsername(anyString());
+        verify(userRepository, times(1)).findByEmail(anyString());
+        verify(studentRepository, times(1)).findByAcademicNumber(anyLong());
     }
 }

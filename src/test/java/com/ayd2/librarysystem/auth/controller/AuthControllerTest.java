@@ -1,70 +1,91 @@
 package com.ayd2.librarysystem.auth.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+import com.ayd2.librarysystem.AbstractMvcTest;
 import com.ayd2.librarysystem.auth.model.dto.CredentialsDto;
 import com.ayd2.librarysystem.auth.service.AuthenticationService;
-import com.ayd2.librarysystem.user.model.dto.StudentRequestDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ayd2.librarysystem.exception.GlobalExceptionHandler;
+import com.ayd2.librarysystem.user.model.dto.UserRequestCreateDto;
+import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
+import com.ayd2.librarysystem.user.model.enums.Rol;
 
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ContextConfiguration(classes = {AuthController.class})
-@ExtendWith(SpringExtension.class)
-class AuthControllerTest {
-    @Autowired
-    private AuthController authController;
+@WebMvcTest(controllers = AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ContextConfiguration(classes = {AuthController.class, GlobalExceptionHandler.class})
+@ExtendWith(MockitoExtension.class)
+public class AuthControllerTest extends AbstractMvcTest {
 
     @MockBean
     private AuthenticationService authenticationService;
 
     @Test
-    void testGetToken() throws Exception {
-        // Arrange
-        when(authenticationService.signIn(Mockito.<CredentialsDto>any())).thenReturn("Token");
-        MockHttpServletRequestBuilder contentTypeResult = MockMvcRequestBuilders.post("/v1/auth/signin")
-                .contentType(MediaType.APPLICATION_JSON);
+    public void itShouldReturnToken() throws Exception {
+        var credentials = new CredentialsDto("username", "123");
+        var token = "dummyToken";
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        MockHttpServletRequestBuilder requestBuilder = contentTypeResult
-                .content(objectMapper.writeValueAsString(new CredentialsDto("lhernandez", "hola123")));
+        when(authenticationService.signIn(any(CredentialsDto.class))).thenReturn(token);
 
-        // Act and Assert
-        MockMvcBuilders.standaloneSetup(authController)
-                .build()
-                .perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isOk());
+        ResultActions result = mockMvc.perform(post("/v1/auth/signin")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf())
+                .content(objectMapper.writeValueAsString(credentials)));
+
+        result.andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(header().string(HttpHeaders.AUTHORIZATION, "Bearer " + token));
     }
 
     @Test
-    void testSignUp() throws Exception {
-        // Arrange
-        MockHttpServletRequestBuilder contentTypeResult = MockMvcRequestBuilders.post("/v1/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON);
+    @WithMockUser(authorities = "ADMIN")
+    public void itShouldReturnCreatedUser() throws Exception {
+        var userRequest = new UserRequestCreateDto(
+                "Usuario Prueba",
+                "username",
+                "username@email.com",
+                "Password_123",
+                LocalDate.now().minusYears(15),
+                Rol.ADMIN.toString()
+        );
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        MockHttpServletRequestBuilder requestBuilder = contentTypeResult
-                .content(objectMapper.writeValueAsString(new StudentRequestDto("Leonidas Hernandez", "leonidas", "leonidas@example.org",
-                        "hola123", LocalDate.of(1970, 1, 1), "ADMIN", 1L, 1L)));
+        var userResponse = new UserResponseDto(
+                1L,
+                "Usuario Prueba",
+                "username",
+                "username@email.com",
+                LocalDate.now(),
+                Rol.ADMIN.toString(),
+                true
+        );
 
-        // Act
-        ResultActions actualPerformResult = MockMvcBuilders.standaloneSetup(authController).build().perform(requestBuilder);
+        when(authenticationService.signUp(any(UserRequestCreateDto.class))).thenReturn(userResponse);
 
-        // Assert
-        actualPerformResult.andExpect(MockMvcResultMatchers.status().is(400));
+        ResultActions resultActions = mockMvc.perform(post("/v1/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userRequest)));
+
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.id").value(userResponse.getId()))
+                .andExpect(jsonPath("$.username").value(userResponse.getUsername()))
+        ;
     }
 }

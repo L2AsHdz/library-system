@@ -43,7 +43,6 @@ public class SecurityConfig {
                                 .requestMatchers("/v1/auth/signin").permitAll()
                                 .requestMatchers("/v1/greetings/welcome").permitAll()
                                 .requestMatchers("/**").authenticated()
-
                                 .anyRequest().authenticated())
                 .sessionManagement(
                         session -> session

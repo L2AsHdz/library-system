@@ -3,8 +3,8 @@ package com.ayd2.librarysystem.auth.service;
 import com.ayd2.librarysystem.auth.model.dto.CredentialsDto;
 import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.ServiceException;
-import com.ayd2.librarysystem.user.model.dto.StudentRequestDto;
-import com.ayd2.librarysystem.user.model.dto.UserRequestDto;
+import com.ayd2.librarysystem.user.model.dto.StudentRequestCreateDto;
+import com.ayd2.librarysystem.user.model.dto.UserRequestCreateDto;
 import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
 import com.ayd2.librarysystem.user.repository.StudentRepository;
 import com.ayd2.librarysystem.user.repository.UserRepository;
@@ -14,9 +14,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -28,16 +28,16 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
 
-    public UserResponseDto signUp(UserRequestDto userRequestDto) throws DuplicatedEntityException {
-        var duplicatedUserByUsername = userRepository.findByUsername(userRequestDto.username());
+    public UserResponseDto signUp(UserRequestCreateDto userRequestCreateDto) throws DuplicatedEntityException {
+        var duplicatedUserByUsername = userRepository.findByUsername(userRequestCreateDto.getUsername());
         if (duplicatedUserByUsername.isPresent())
             throw new DuplicatedEntityException("User with username already exists");
 
-        var duplicatedUserByEmail = userRepository.findByEmail(userRequestDto.email());
+        var duplicatedUserByEmail = userRepository.findByEmail(userRequestCreateDto.getEmail());
         if (duplicatedUserByEmail.isPresent())
             throw new DuplicatedEntityException("User with email already exists");
 
-        if (userRequestDto instanceof StudentRequestDto studentRequestDto) {
+        if (userRequestCreateDto instanceof StudentRequestCreateDto studentRequestDto) {
             var duplicatedStudentByAcademicNumber = studentRepository.findByAcademicNumber(studentRequestDto.academicNumber());
             if (duplicatedStudentByAcademicNumber.isPresent())
                 throw new DuplicatedEntityException("Student with academic number already exists");
@@ -48,7 +48,7 @@ public class AuthenticationService {
             return newStudent.toRecord();
         }
 
-        var newUser = userRequestDto.toEntity();
+        var newUser = userRequestCreateDto.toEntity();
         newUser.setPassword(encoder.encode(newUser.getPassword()));
 
         var userSaved = userRepository.save(newUser);
@@ -58,8 +58,17 @@ public class AuthenticationService {
     public String signIn(CredentialsDto credentialsDto) throws IOException, ServiceException {
         var user = userRepository.findByUsername(credentialsDto.username())
                 .orElseGet(() -> userRepository.findByEmail(credentialsDto.username())
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found")));
+                        .orElse(null));
 
+        if (Objects.isNull(user)) {
+            try {
+                var academicNumber = Long.parseLong(credentialsDto.username());
+                user = studentRepository.findByAcademicNumber(academicNumber)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            } catch (NumberFormatException e) {
+                throw new UsernameNotFoundException("User not found");
+            }
+        }
 
         if (!(user.getStatus() == 1))
             throw new ServiceException("User is disabled");

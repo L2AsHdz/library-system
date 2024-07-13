@@ -3,7 +3,7 @@ package com.ayd2.librarysystem.auth.controller;
 import com.ayd2.librarysystem.auth.model.dto.CredentialsDto;
 import com.ayd2.librarysystem.auth.service.AuthenticationService;
 import com.ayd2.librarysystem.exception.ServiceException;
-import com.ayd2.librarysystem.user.model.dto.UserRequestDto;
+import com.ayd2.librarysystem.user.model.dto.UserRequestCreateDto;
 import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("v1/auth")
+@RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -34,8 +34,8 @@ public class AuthController {
 
     @PostMapping("/signup")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<UserResponseDto> signUp(@RequestBody @Valid UserRequestDto userRequestDto) throws ServiceException {
-        var userCreated = authenticationService.signUp(userRequestDto);
+    public ResponseEntity<UserResponseDto> signUp(@RequestBody @Valid UserRequestCreateDto userRequestCreateDto) throws ServiceException {
+        var userCreated = authenticationService.signUp(userRequestCreateDto);
         return ResponseEntity.ok().body(userCreated);
     }
 }
