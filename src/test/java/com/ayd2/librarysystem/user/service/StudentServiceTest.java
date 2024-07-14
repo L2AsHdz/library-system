@@ -6,7 +6,8 @@ import com.ayd2.librarysystem.career.repository.CareerRepository;
 import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.NotFoundException;
 import com.ayd2.librarysystem.user.model.StudentModel;
-import com.ayd2.librarysystem.user.model.dto.StudentRequestDto;
+import com.ayd2.librarysystem.user.model.dto.StudentRequestCreateDto;
+import com.ayd2.librarysystem.user.model.dto.StudentRequestUpdateDto;
 import com.ayd2.librarysystem.user.model.dto.StudentResponseDto;
 import com.ayd2.librarysystem.user.model.enums.Rol;
 import com.ayd2.librarysystem.user.repository.StudentRepository;
@@ -43,8 +44,10 @@ class StudentServiceTest {
     private StudentService studentService;
 
     private StudentModel testStudent;
-    private StudentRequestDto testStudentRequestDto;
+    private StudentRequestCreateDto testStudentRequestDto;
+    private StudentRequestUpdateDto testStudentRequestUpdateDto;
     private StudentResponseDto testStudentResponseDto;
+
 
     @BeforeEach
     public void setUp() {
@@ -60,7 +63,7 @@ class StudentServiceTest {
         testStudent.setAcademicNumber(123456L);
         testStudent.setCareerModel(CareerModel.builder().id(1L).name("Career 1").build());
 
-        testStudentRequestDto = new StudentRequestDto(
+        testStudentRequestDto = new StudentRequestCreateDto(
                 testStudent.getFullName(),
                 testStudent.getUsername(),
                 testStudent.getEmail(),
@@ -119,6 +122,8 @@ class StudentServiceTest {
 
     @Test
     public void itShouldUpdateStudent() throws NotFoundException, DuplicatedEntityException {
+        createUserRequestUpdateDto();
+
         when(studentRepository.findById(anyLong())).thenReturn(java.util.Optional.of(testStudent));
         when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.empty());
         when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.empty());
@@ -126,7 +131,7 @@ class StudentServiceTest {
         when(careerRepository.findById(anyLong())).thenReturn(Optional.of(testStudent.getCareerModel()));
         when(studentRepository.save(testStudent)).thenReturn(testStudent);
 
-        var updatedStudentResponseDto = studentService.updateStudent(testStudent.getId(), testStudentRequestDto);
+        var updatedStudentResponseDto = studentService.updateStudent(testStudent.getId(), testStudentRequestUpdateDto);
 
         assertThat(updatedStudentResponseDto).isNotNull().isEqualToComparingFieldByField(testStudentResponseDto);
 
@@ -139,9 +144,11 @@ class StudentServiceTest {
 
     @Test
     public void itShouldThrowNotFoundException_WhenStudentToUpdateNotFound() {
+        createUserRequestUpdateDto();
+
         when(studentRepository.findById(anyLong())).thenReturn(java.util.Optional.empty());
 
-        assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestDto))
+        assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestUpdateDto))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Student not found");
 
@@ -150,10 +157,12 @@ class StudentServiceTest {
 
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenEmailAlreadyExists() {
+        createUserRequestUpdateDto();
+
         when(studentRepository.findById(anyLong())).thenReturn(java.util.Optional.of(testStudent));
         when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.of(testStudent));
 
-        assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestDto))
+        assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestUpdateDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("Student with this email already exists");
 
@@ -164,11 +173,13 @@ class StudentServiceTest {
 
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenUsernameAlreadyExists() {
+        createUserRequestUpdateDto();
+
         when(studentRepository.findById(anyLong())).thenReturn(java.util.Optional.of(testStudent));
         when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.empty());
         when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(java.util.Optional.of(testStudent));
 
-        assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestDto))
+        assertThatThrownBy(() -> studentService.updateStudent(1L, testStudentRequestUpdateDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("Student with this username already exists");
 
@@ -176,5 +187,17 @@ class StudentServiceTest {
         verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
         verify(userRepository).findByUsernameAndIdNot(anyString(), anyLong());
         verify(userRepository, never()).save(any(StudentModel.class));
+    }
+
+    private void createUserRequestUpdateDto(){
+        testStudentRequestUpdateDto = new StudentRequestUpdateDto(
+                testStudent.getFullName(),
+                testStudent.getUsername(),
+                testStudent.getEmail(),
+                testStudent.getBirthDate(),
+                testStudent.getUserRole().name(),
+                testStudent.getAcademicNumber(),
+                testStudent.getCareerModel().getId()
+        );
     }
 }

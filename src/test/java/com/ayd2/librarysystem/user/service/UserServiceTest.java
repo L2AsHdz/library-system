@@ -3,7 +3,8 @@ package com.ayd2.librarysystem.user.service;
 import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.NotFoundException;
 import com.ayd2.librarysystem.user.model.UserModel;
-import com.ayd2.librarysystem.user.model.dto.UserRequestDto;
+import com.ayd2.librarysystem.user.model.dto.UserRequestCreateDto;
+import com.ayd2.librarysystem.user.model.dto.UserRequestUpdateDto;
 import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
 import com.ayd2.librarysystem.user.model.enums.Rol;
 import com.ayd2.librarysystem.user.repository.UserRepository;
@@ -32,7 +33,8 @@ class UserServiceTest {
     UserService userService;
 
     private UserModel testUser;
-    private UserRequestDto testUserRequestDto;
+    private UserRequestCreateDto testUserRequestCreateDto;
+    private UserRequestUpdateDto testUserRequestUpdateDto;
     private UserResponseDto testUserResponseDto;
 
     @BeforeEach
@@ -48,7 +50,7 @@ class UserServiceTest {
                 .birthDate(LocalDate.parse("2000-01-01"))
                 .build();
 
-        testUserRequestDto = new UserRequestDto(
+        testUserRequestCreateDto = new UserRequestCreateDto(
                 testUser.getFullName(),
                 testUser.getUsername(),
                 testUser.getEmail(),
@@ -109,12 +111,14 @@ class UserServiceTest {
 
     @Test
     public void itShouldUpdateUser() throws NotFoundException, DuplicatedEntityException {
+        createUserRequestUpdateDto();
+
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(Optional.empty());
         when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(Optional.empty());
         when(userRepository.save(any(UserModel.class))).thenReturn(testUser);
 
-        var result = userService.updateUser(testUser.getId(), testUserRequestDto);
+        var result = userService.updateUser(testUser.getId(), testUserRequestUpdateDto);
 
         assertThat(result).isNotNull().isEqualToComparingFieldByField(testUserResponseDto);
 
@@ -126,9 +130,11 @@ class UserServiceTest {
 
     @Test
     public void itShouldThrowNotFoundException_WhenUserToUpdateDoesntExists() {
+        createUserRequestUpdateDto();
+
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestDto))
+        assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestUpdateDto))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("User not found");
 
@@ -137,10 +143,12 @@ class UserServiceTest {
 
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenEmailAlreadyExists() {
+        createUserRequestUpdateDto();
+
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(Optional.of(testUser));
 
-        assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestDto))
+        assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestUpdateDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("User with this email already exists");
 
@@ -151,11 +159,13 @@ class UserServiceTest {
 
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenUsernameAlreadyExists() {
+        createUserRequestUpdateDto();
+
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(userRepository.findByEmailAndIdNot(anyString(), anyLong())).thenReturn(Optional.empty());
         when(userRepository.findByUsernameAndIdNot(anyString(), anyLong())).thenReturn(Optional.of(testUser));
 
-        assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestDto))
+        assertThatThrownBy(() -> userService.updateUser(testUser.getId(), testUserRequestUpdateDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("User with this username already exists");
 
@@ -163,5 +173,15 @@ class UserServiceTest {
         verify(userRepository).findByEmailAndIdNot(anyString(), anyLong());
         verify(userRepository).findByUsernameAndIdNot(anyString(), anyLong());
         verify(userRepository, never()).save(any(UserModel.class));
+    }
+
+    private void createUserRequestUpdateDto() {
+        testUserRequestUpdateDto = new UserRequestUpdateDto(
+                testUser.getFullName(),
+                testUser.getUsername(),
+                testUser.getEmail(),
+                testUser.getBirthDate(),
+                testUser.getUserRole().name()
+        );
     }
 }

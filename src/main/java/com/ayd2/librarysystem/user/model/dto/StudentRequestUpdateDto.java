@@ -4,10 +4,12 @@ import com.ayd2.librarysystem.career.model.CareerModel;
 import com.ayd2.librarysystem.user.model.StudentModel;
 import com.ayd2.librarysystem.user.model.enums.Rol;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
 import java.time.LocalDate;
 
-public class StudentRequestDto extends UserRequestDto {
+@Getter
+public class StudentRequestUpdateDto extends UserRequestUpdateDto {
 
     @NotNull(message = "The academic number is required")
     private final Long academicNumber;
@@ -18,19 +20,11 @@ public class StudentRequestDto extends UserRequestDto {
     @NotNull(message = "The is sanctioned is required")
     private final Boolean isSanctioned = false;
 
-    public StudentRequestDto(String fullName, String username, String email, String password,
-                             LocalDate birthDate, String role, Long academicNumber, Long careerId) {
-        super(fullName, username, email, password, birthDate, role);
+    public StudentRequestUpdateDto(String fullName, String username, String email,
+                                   LocalDate birthDate, String role, Long academicNumber, Long careerId) {
+        super(fullName, username, email, birthDate, role);
         this.academicNumber = academicNumber;
         this.careerId = careerId;
-    }
-
-    public Long academicNumber() {
-        return academicNumber;
-    }
-
-    public Long careerId() {
-        return careerId;
     }
 
     public Boolean isSanctioned() {
@@ -42,12 +36,10 @@ public class StudentRequestDto extends UserRequestDto {
         student.setAcademicNumber(academicNumber);
         student.setCareerModel(CareerModel.builder().id(careerId).build());
         student.setIsSanctioned(isSanctioned);
-
-        student.setFullName(fullName());
-        student.setUsername(username());
-        student.setEmail(email());
-        student.setPassword(password());
-        student.setBirthDate(birthDate());
+        student.setFullName(getFullName());
+        student.setUsername(getUsername());
+        student.setEmail(getEmail());
+        student.setBirthDate(getBirthDate());
         student.setUserRole(Rol.STUDENT);
 
         return student;

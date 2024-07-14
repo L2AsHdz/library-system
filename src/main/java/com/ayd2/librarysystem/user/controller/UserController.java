@@ -2,8 +2,10 @@ package com.ayd2.librarysystem.user.controller;
 
 import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.NotFoundException;
-import com.ayd2.librarysystem.user.model.dto.UserRequestDto;
+import com.ayd2.librarysystem.user.model.dto.UserRequestCreateDto;
+import com.ayd2.librarysystem.user.model.dto.UserRequestUpdateDto;
 import com.ayd2.librarysystem.user.model.dto.UserResponseDto;
+import com.ayd2.librarysystem.user.model.dto.UserUpdatePasswordDto;
 import com.ayd2.librarysystem.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +29,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) throws NotFoundException, NotFoundException {
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) throws NotFoundException {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @RequestBody @Valid UserRequestDto userRequestDto) throws NotFoundException, DuplicatedEntityException {
-        return ResponseEntity.ok(userService.updateUser(id, userRequestDto));
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @RequestBody @Valid UserRequestUpdateDto userRequestUpdateDto) throws NotFoundException, DuplicatedEntityException {
+        return ResponseEntity.ok(userService.updateUser(id, userRequestUpdateDto));
+    }
+
+    @PutMapping("/update-password/{id}")
+    public ResponseEntity<UserResponseDto> updatePassword(@PathVariable Long id, @RequestBody @Valid UserUpdatePasswordDto userUpdatePasswordDto) throws NotFoundException, DuplicatedEntityException {
+        return ResponseEntity.ok(userService.updatePassword(id, userUpdatePasswordDto));
     }
 }

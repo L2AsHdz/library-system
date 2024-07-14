@@ -42,7 +42,7 @@ public class UserModel {
     private Short status = 1;
 
     public UserResponseDto toRecord(){
-        return new UserResponseDto(id, fullName, username, email, password, birthDate, userRole.name(), status == 1);
+        return new UserResponseDto(id, fullName, username, email, birthDate, userRole.name(), status == 1);
     }
 
 }

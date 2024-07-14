@@ -2,7 +2,8 @@ package com.ayd2.librarysystem.user.controller;
 
 import com.ayd2.librarysystem.exception.DuplicatedEntityException;
 import com.ayd2.librarysystem.exception.NotFoundException;
-import com.ayd2.librarysystem.user.model.dto.StudentRequestDto;
+import com.ayd2.librarysystem.user.model.dto.StudentRequestCreateDto;
+import com.ayd2.librarysystem.user.model.dto.StudentRequestUpdateDto;
 import com.ayd2.librarysystem.user.model.dto.StudentResponseDto;
 import com.ayd2.librarysystem.user.service.StudentService;
 import jakarta.validation.Valid;
@@ -32,7 +33,7 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudentResponseDto> updateStudent(@PathVariable Long id, @RequestBody @Valid StudentRequestDto studentRequestDto) throws NotFoundException, DuplicatedEntityException {
-        return ResponseEntity.ok(studentService.updateStudent(id, studentRequestDto));
+    public ResponseEntity<StudentResponseDto> updateStudent(@PathVariable Long id, @RequestBody @Valid StudentRequestUpdateDto studentRequestUpdateDto) throws NotFoundException, DuplicatedEntityException {
+        return ResponseEntity.ok(studentService.updateStudent(id, studentRequestUpdateDto));
     }
 }
