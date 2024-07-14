@@ -1,124 +1,119 @@
 package com.ayd2.librarysystem.career.controller;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-
+import com.ayd2.librarysystem.AbstractMvcTest;
+import com.ayd2.librarysystem.career.model.CareerModel;
 import com.ayd2.librarysystem.career.model.dto.CareerRequestDto;
 import com.ayd2.librarysystem.career.model.dto.CareerResponseDto;
 import com.ayd2.librarysystem.career.service.CareerService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
-
+import com.ayd2.librarysystem.exception.GlobalExceptionHandler;
+import com.ayd2.librarysystem.user.controller.UserController;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.aot.DisabledInAotMode;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ContextConfiguration(classes = {CareerController.class})
-@ExtendWith(SpringExtension.class)
-class CareerControllerTest {
-    @Autowired
-    private CareerController careerController;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(controllers = CareerController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ContextConfiguration(classes = {CareerController.class, GlobalExceptionHandler.class})
+@ExtendWith(MockitoExtension.class)
+class CareerControllerTest extends AbstractMvcTest {
 
     @MockBean
     private CareerService careerService;
 
-    @Test
-    void testGetAllCareers() throws Exception {
-        // Arrange
-        when(careerService.getAllCareers()).thenReturn(new ArrayList<>());
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/v1/careers");
+    private CareerModel testCareer;
+    private CareerRequestDto testCareerRequestDto;
+    private CareerResponseDto testCareerResponseDto;
 
-        // Act and Assert
-        MockMvcBuilders.standaloneSetup(careerController)
-                .build()
-                .perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("[]"));
+    @BeforeEach
+    public void setUp() {
+        testCareer = CareerModel.builder()
+                .id(1L)
+                .name("Test Career")
+                .build();
     }
 
     @Test
-    void testGetCareerById() throws Exception {
-        // Arrange
-        when(careerService.getCareerById(Mockito.<Long>any())).thenReturn(new CareerResponseDto(1L, "Carrera"));
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/v1/careers/{id}", 1L);
+    @WithMockUser(authorities = "ADMIN")
+    void getAllCareers() throws Exception {
+        when(careerService.getAllCareers()).thenReturn(List.of(testCareer.toRecord()));
 
-        // Act and Assert
-        MockMvcBuilders.standaloneSetup(careerController)
-                .build()
-                .perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("{\"id\":1,\"name\":\"Carrera\"}"));
+        ResultActions result = mockMvc.perform(get("/v1/careers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()));
+
+        result.andExpect(status().isOk())
+                .andExpect((r) -> {
+                    String response = r.getResponse().getContentAsString();
+                    assertThat(response).isEqualTo(objectMapper.writeValueAsString(List.of(testCareer.toRecord())));
+                });
     }
 
     @Test
-    void testCreateCareer() throws Exception {
-        // Arrange
-        when(careerService.createCareer(Mockito.<CareerRequestDto>any())).thenReturn(new CareerResponseDto(1L, "Carrera"));
-        MockHttpServletRequestBuilder contentTypeResult = MockMvcRequestBuilders.post("/v1/careers")
-                .contentType(MediaType.APPLICATION_JSON);
+    @WithMockUser(authorities = "ADMIN")
+    void getCareerById() throws Exception {
+        when(careerService.getCareerById(1L)).thenReturn(testCareer.toRecord());
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        MockHttpServletRequestBuilder requestBuilder = contentTypeResult
-                .content(objectMapper.writeValueAsString(new CareerRequestDto("Carrera")));
+        ResultActions result = mockMvc.perform(get("/v1/careers/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()));
 
-        // Act
-        ResultActions actualPerformResult = MockMvcBuilders.standaloneSetup(careerController)
-                .build()
-                .perform(requestBuilder);
-
-        // Assert
-        actualPerformResult.andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("{\"id\":1,\"name\":\"Carrera\"}"));
+        result.andExpect(status().isOk())
+                .andExpect((r) -> {
+                    String response = r.getResponse().getContentAsString();
+                    assertThat(response).isEqualTo(objectMapper.writeValueAsString(testCareer.toRecord()));
+                });
     }
 
     @Test
-    void testUpdateCareer() throws Exception {
-        // Arrange
-        when(careerService.updateCareer(Mockito.<Long>any(), Mockito.<CareerRequestDto>any()))
-                .thenReturn(new CareerResponseDto(1L, "Carrera2"));
-        MockHttpServletRequestBuilder contentTypeResult = MockMvcRequestBuilders.put("/v1/careers/{id}", 1L)
-                .contentType(MediaType.APPLICATION_JSON);
+    @WithMockUser(authorities = "ADMIN")
+    void createCareer() throws Exception {
+        createCareerRequestDto();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        MockHttpServletRequestBuilder requestBuilder = contentTypeResult
-                .content(objectMapper.writeValueAsString(new CareerRequestDto("Carrera2")));
+        when(careerService.createCareer(testCareerRequestDto)).thenReturn(testCareer.toRecord());
 
-        // Act and Assert
-        MockMvcBuilders.standaloneSetup(careerController)
-                .build()
-                .perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("{\"id\":1,\"name\":\"Carrera2\"}"));
+        ResultActions result = mockMvc.perform(post("/v1/careers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testCareerRequestDto))
+                .with(csrf()));
+
+        result.andExpect(status().isCreated());
     }
 
     @Test
-    void testDeleteCareer() throws Exception {
-        // Arrange
-        doNothing().when(careerService).deleteCareer(Mockito.<Long>any());
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/v1/careers/{id}", 1L);
+    @WithMockUser(authorities = "ADMIN")
+    void updateCareer() throws Exception {
+        createCareerRequestDto();
 
-        // Act
-        ResultActions actualPerformResult = MockMvcBuilders.standaloneSetup(careerController)
-                .build()
-                .perform(requestBuilder);
+        when(careerService.updateCareer(1L, testCareerRequestDto)).thenReturn(testCareer.toRecord());
 
-        // Assert
-        actualPerformResult.andExpect(MockMvcResultMatchers.status().isAccepted());
+        ResultActions result = mockMvc.perform(put("/v1/careers/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testCareerRequestDto))
+                .with(csrf()));
+
+        result.andExpect(status().isOk());
+    }
+
+    private void createCareerRequestDto() {
+        testCareerRequestDto = new CareerRequestDto(
+                testCareer.getName()
+        );
     }
 }
