@@ -39,7 +39,6 @@ class CareerControllerTest extends AbstractMvcTest {
 
     private CareerModel testCareer;
     private CareerRequestDto testCareerRequestDto;
-    private CareerResponseDto testCareerResponseDto;
 
     @BeforeEach
     public void setUp() {

@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface CareerRepository extends JpaRepository<CareerModel, Long> {
   Optional<CareerModel> findByName(String name);
+  Optional<CareerModel> findByNameAndIdNot(String name, Long id);
 }

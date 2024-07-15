@@ -142,7 +142,7 @@ class BookServiceTest {
     @Test
     public void itShouldUpdateBook() throws ServiceException {
         // Arrange
-        when(bookRepository.findByTitle(any(String.class))).thenReturn(Optional.empty());
+        when(bookRepository.findByTitleAndIdNot(any(String.class), anyLong())).thenReturn(Optional.empty());
         when(bookRepository.findById(any(Long.class))).thenReturn(Optional.of(testBook));
         when(bookRepository.save(any(BookModel.class))).thenReturn(testBook);
 
@@ -151,37 +151,37 @@ class BookServiceTest {
 
         // Assert
         assertThat(bookExpected).isNotNull().isEqualToComparingFieldByField(testBookResponseDto);
-        verify(bookRepository).findById(testBook.getId());
+        verify(bookRepository).findByTitleAndIdNot(anyString(), anyLong());
         verify(bookRepository).save(testBook);
-        verify(bookRepository).findByTitle(testBook.getTitle());
+        verify(bookRepository).findById(anyLong());
     }
 
     @Test
     public void itShouldThrowException_WhenBookToUpdateDoesntExists() {
         // Arrange
-        when(bookRepository.findByTitle(any(String.class))).thenReturn(Optional.empty());
-        when(bookRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // Act and Assert
         assertThatThrownBy(() -> bookService.updateBook(testBook.getId(), testBookRequestDto))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Book not found");
-        verify(bookRepository).findById(testBook.getId());
-        verify(bookRepository).findByTitle(testBook.getTitle());
+        verify(bookRepository).findById(anyLong());
+        verify(bookRepository, never()).findByTitleAndIdNot(anyString(), anyLong());
         verify(bookRepository, never()).save(any(BookModel.class));
     }
 
     @Test
     public void itShouldThrowException_WhenBookAlreadyExistsOnUpdate() {
         // Arrange
-        when(bookRepository.findByTitle(any(String.class))).thenReturn(Optional.of(testBook));
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(testBook));
+        when(bookRepository.findByTitleAndIdNot(any(String.class), anyLong())).thenReturn(Optional.of(testBook));
 
         // Act and Assert
         assertThatThrownBy(() -> bookService.updateBook(testBook.getId(), testBookRequestDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("Book with this title already exists");
-        verify(bookRepository).findByTitle(testBook.getTitle());
-        verify(bookRepository, never()).findById(testBook.getId());
+        verify(bookRepository).findByTitleAndIdNot(anyString(), anyLong());
+        verify(bookRepository).findById(anyLong());
         verify(bookRepository, never()).save(any(BookModel.class));
     }
 

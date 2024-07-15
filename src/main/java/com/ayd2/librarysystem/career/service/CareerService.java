@@ -39,12 +39,12 @@ public class CareerService {
     }
 
     public CareerResponseDto updateCareer(Long id, CareerRequestDto careerModel) throws NotFoundException, DuplicatedEntityException {
-        var duplicatedByName = careerRepository.findByName(careerModel.name());
-        if (duplicatedByName.isPresent())
-            throw new DuplicatedEntityException("Career with this name already exists");
-
         var careerToUpdate = careerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Career not found"));
+
+        var duplicatedByName = careerRepository.findByNameAndIdNot(careerModel.name(), id);
+        if (duplicatedByName.isPresent())
+            throw new DuplicatedEntityException("Career with this name already exists");
 
         careerToUpdate.setName(careerModel.name());
 

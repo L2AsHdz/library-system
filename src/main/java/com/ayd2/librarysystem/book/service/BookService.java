@@ -41,17 +41,28 @@ public class BookService {
     }
 
     public BookResponseDto updateBook(Long id, BookRequestDto bookRequestDto) throws ServiceException {
-        var duplicatedByTitle = bookRepository.findByTitle(bookRequestDto.title());
-        if (duplicatedByTitle.isPresent())
-            throw new DuplicatedEntityException("Book with this title already exists");
-
         var bookToUpdate = bookRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Book not found"));
+
+        var duplicatedByTitle = bookRepository.findByTitleAndIdNot(bookRequestDto.title(), id);
+        if (duplicatedByTitle.isPresent())
+            throw new DuplicatedEntityException("Book with this title already exists");
 
         bookToUpdate.setTitle(bookRequestDto.title());
         bookToUpdate.setAuthor(bookRequestDto.author());
         bookToUpdate.setPublicationDate(bookRequestDto.publicationDate());
         bookToUpdate.setPublisher(bookRequestDto.publisher());
+
+        var updatedBook = bookRepository.save(bookToUpdate);
+
+        return updatedBook.toRecord();
+    }
+
+    public BookResponseDto updateStock(Long id, Long quantity) throws ServiceException {
+        var bookToUpdate = bookRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Book not found"));
+
+        bookToUpdate.setStock(quantity);
 
         var updatedBook = bookRepository.save(bookToUpdate);
 

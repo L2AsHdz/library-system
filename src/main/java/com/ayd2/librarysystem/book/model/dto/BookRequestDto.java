@@ -28,7 +28,7 @@ public record BookRequestDto(
 		@NotBlank(message = "Publisher is required")
 		@Size(message = "Publisher must be between 1 and 150 characters", min = 1, max = 150)
 		String publisher
-) implements Serializable {
+) {
   public BookModel toEntity() {
 	return BookModel.builder()
 			.title(title)

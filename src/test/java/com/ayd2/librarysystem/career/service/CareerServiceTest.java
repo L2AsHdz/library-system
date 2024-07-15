@@ -133,7 +133,7 @@ class CareerServiceTest {
     @Test
     public void itShouldUpdateCareer() throws NotFoundException, DuplicatedEntityException {
         // Arrange
-        when(careerRepository.findByName(any(String.class))).thenReturn(Optional.empty());
+        when(careerRepository.findByNameAndIdNot(any(String.class), anyLong())).thenReturn(Optional.empty());
         when(careerRepository.findById(any(Long.class))).thenReturn(Optional.of(testCareer));
         when(careerRepository.save(any(CareerModel.class))).thenReturn(testCareer);
 
@@ -142,7 +142,7 @@ class CareerServiceTest {
 
         // Assert
         assertThat(result).isNotNull().isEqualToComparingFieldByField(testCareerResponseDto);
-        verify(careerRepository).findByName(any(String.class));
+        verify(careerRepository).findByNameAndIdNot(any(String.class), anyLong());
         verify(careerRepository).findById(testCareer.getId());
         verify(careerRepository).save(any(CareerModel.class));
     }
@@ -150,14 +150,13 @@ class CareerServiceTest {
     @Test
     public void itShouldThrowNotFoundException_WhenCareerToUpdateDoesntExist() {
         // Arrange
-        when(careerRepository.findByName(any(String.class))).thenReturn(Optional.empty());
         when(careerRepository.findById(any(Long.class))).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThatThrownBy(() -> careerService.updateCareer(testCareer.getId(), testCareerRequestDto))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Career not found");
-        verify(careerRepository).findByName(any(String.class));
+        verify(careerRepository, never()).findByNameAndIdNot(any(String.class), anyLong());
         verify(careerRepository).findById(testCareer.getId());
         verify(careerRepository, never()).save(any(CareerModel.class));
     }
@@ -165,13 +164,14 @@ class CareerServiceTest {
     @Test
     public void itShouldThrowDuplicatedEntityException_WhenCareerNameAlreadyExists() {
         // Arrange
-        when(careerRepository.findByName(any(String.class))).thenReturn(Optional.of(testCareer));
+        when(careerRepository.findById(any(Long.class))).thenReturn(Optional.of(testCareer));
+        when(careerRepository.findByNameAndIdNot(any(String.class), anyLong())).thenReturn(Optional.of(testCareer));
 
         // Act & Assert
         assertThatThrownBy(() -> careerService.updateCareer(testCareer.getId(), testCareerRequestDto))
                 .isInstanceOf(DuplicatedEntityException.class)
                 .hasMessage("Career with this name already exists");
-        verify(careerRepository).findByName(any(String.class));
+        verify(careerRepository).findByNameAndIdNot(any(String.class), anyLong());
         verify(careerRepository, never()).save(any(CareerModel.class));
     }
 
