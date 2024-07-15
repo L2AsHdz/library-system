@@ -53,9 +53,16 @@ public class BookController {
         return ResponseEntity.accepted().build();
     }
 
-    @GetMapping("/out-of-stock")
-    public ResponseEntity<List<BookResponseDto>> getBooksByStockLessThan() {
-        return ResponseEntity.ok(bookService.getBooksByStockLessThan(1L));
+    @GetMapping("/out-of-stock/{quantity}")
+    @PreAuthorize("hasAuthority('STUDENT') or hasAuthority('ADMIN')")
+    public ResponseEntity<List<BookResponseDto>> getBooksByStockLessThan(@PathVariable Long quantity) {
+        return ResponseEntity.ok(bookService.getBooksByStockLessThan(quantity));
+    }
+
+    @GetMapping("/with-stock/{quantity}")
+    @PreAuthorize("hasAuthority('STUDENT') or hasAuthority('ADMIN')")
+    public ResponseEntity<List<BookResponseDto>> getBooksByStockGreaterThan(@PathVariable Long quantity) {
+        return ResponseEntity.ok(bookService.getBooksByStockGreaterThan(quantity));
     }
 
 }

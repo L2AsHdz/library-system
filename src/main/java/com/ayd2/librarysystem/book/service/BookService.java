@@ -81,4 +81,10 @@ public class BookService {
                 .map(BookModel::toRecord)
                 .toList();
     }
+
+    public List<BookResponseDto> getBooksByStockGreaterThan(Long stock) {
+        return bookRepository.findAllByStockGreaterThan(stock).stream()
+                .map(BookModel::toRecord)
+                .toList();
+    }
 }

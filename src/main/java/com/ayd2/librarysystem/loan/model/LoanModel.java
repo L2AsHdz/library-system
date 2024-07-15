@@ -1,13 +1,16 @@
 package com.ayd2.librarysystem.loan.model;
 
 import com.ayd2.librarysystem.book.model.BookModel;
+import com.ayd2.librarysystem.loan.model.dto.LoanResponseDto;
 import com.ayd2.librarysystem.user.model.StudentModel;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -40,5 +43,16 @@ public class Loan {
     @Lob
     @Column(name = "status")
     private String status;
+
+    private LoanResponseDto toResponse() {
+        return new LoanResponseDto(
+                id,
+                studentModel.getId(),
+                bookModel.getId(),
+                loanDate.toString(),
+                returnDate.toString(),
+                status
+        );
+    }
 
 }

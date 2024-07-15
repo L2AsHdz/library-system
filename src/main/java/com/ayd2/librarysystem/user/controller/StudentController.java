@@ -32,6 +32,11 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getStudentById(id));
     }
 
+    @GetMapping("/academic-number/{id}")
+    public ResponseEntity<StudentResponseDto> getStudentByAcademicNumber(@PathVariable Long id) throws NotFoundException {
+        return ResponseEntity.ok(studentService.getStudentByAcademicNumber(id));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<StudentResponseDto> updateStudent(@PathVariable Long id, @RequestBody @Valid StudentRequestUpdateDto studentRequestUpdateDto) throws NotFoundException, DuplicatedEntityException {
         return ResponseEntity.ok(studentService.updateStudent(id, studentRequestUpdateDto));

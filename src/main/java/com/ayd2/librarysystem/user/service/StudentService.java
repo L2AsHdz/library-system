@@ -27,6 +27,12 @@ public class StudentService {
                 .orElseThrow(() -> new NotFoundException("Student not found"));
     }
 
+    public StudentResponseDto getStudentByAcademicNumber(Long academicNumber) throws NotFoundException {
+        return studentRepository.findByAcademicNumber(academicNumber)
+                .map(StudentModel::toRecord)
+                .orElseThrow(() -> new NotFoundException("Student not found"));
+    }
+
     public List<StudentResponseDto> getAllStudents() {
         return studentRepository.findAll().stream()
                 .map(StudentModel::toRecord)
