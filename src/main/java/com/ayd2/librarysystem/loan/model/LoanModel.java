@@ -14,7 +14,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-public class Loan {
+@Table(name = "Loan")
+public class LoanModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "loan_id", nullable = false)
@@ -44,7 +45,7 @@ public class Loan {
     @Column(name = "status")
     private String status;
 
-    private LoanResponseDto toResponse() {
+    public LoanResponseDto toResponse() {
         return new LoanResponseDto(
                 id,
                 studentModel.getId(),
