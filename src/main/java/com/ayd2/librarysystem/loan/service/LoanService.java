@@ -29,6 +29,7 @@ public class LoanService {
         var loan = LoanModel.builder()
                 .studentModel(student)
                 .bookModel(BookModel.builder().id(loanRequestDto.bookId()).build())
+                .loanPrice(0.0)
                 .loanDate(LocalDate.now())
                 .returnDate(LocalDate.now().plusDays(3))
                 .status("ACTIVE")
